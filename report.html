@@ -2265,6 +2265,8 @@ button:active {
       <ul></ul>
       <a class="feedback" href="#feedback">Feedback</a>
       <ul></ul>
+      <a class="funding" href="#funding">Funding</a>
+      <ul></ul>
       <a class="references" href="#references">References</a>
     </div>
 
@@ -2449,6 +2451,8 @@ button:active {
       <li><b>Performance is a big challenge</b>. Since conflict resolution appears to require state materialization at arbitrary points in operational history, considerable work on performant algorithms will likely be necessary. In the context of the prototype, Merkle Search Trees where used for this purpose, but other immutable data sructures, checkpointing, etc. could be explored (since they would be used locally). </li> 
     
       <li><b>Explore a layered approach to Byzantine fault tolerance</b>. Having settled on operational logs as the main data structure, consider approaching Byzantine fault tolerance as the problem of replicating logs, independently of their purpose. Merkle DAGs offer a very robust solution, and this hardened apporach could be implemented as just another transport layer for the sync engine component described above. Explore using Merkle Search Trees as a secondary structure for faster startup, partial sync, etc.</li>
+
+      <li><b>Explore automatic generation of preconditions for conflict resolution</b>. As we mentioned before, the conflict resolution layer would be easier to use by application developers if the parts of the state that need to be guarded by the proposed co-transaction mechanism could be detected automatically. This idea contradicts our desire to decouple application storage and sync storage, since observations of the state would then happen in a different storage system. This needs further analysis.</li>
     </ul>
 
     <h4 id="feedback">Feedback</h4>
@@ -2458,6 +2462,9 @@ button:active {
     <p>You're also welcome to join Hyper Hyper Space's <a href="https://discord.gg/9epr3XrRnW">Discord instance</a>.</p>
 
     <p>The author may be reached at <a href="mailto:santi@hyperhyperspace.org">santi@hyperhyperspace.org</a>.</p>
+
+    <h4 id="funding">Funding</h4>
+    <p>This project is funded through <a href="https://nlnet.nl/assure">NGI Assure</a>, a fund established by <a href="https://nlnet.nl">NLnet</a> with financial support from the European Commission's </p>
 
     <h4 id="references">References</h4>
     
