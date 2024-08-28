@@ -2229,13 +2229,13 @@ button:active {
       <ul class="padding-bottom">
         <li>Building a functionally complete secure data sync system (full description in the <a href="https://www.hyperhyperspace.org/whitepaper/">White Paper</a>).</li>
         <li>Creating a small suite of browser-based communication tools based on secure data sync, running the sync engine <i>inside</i> the browser (demo at <a href="https://hyperhyper.space">hyperhyper.space</a>, repos for <a href="https://github.com/hyperhyperspace/hyper-browser-web">hyper browser</a>, <a href="https://github.com/hyperhyperspace/home">desktop & address book</a>, <a href="https://github.com/hyperhyperspace/chat-group">chat</a>, <a href="https://github.com/hyperhyperspace/wiki-collab">wikis</a>).</li>
-        <li>Analyzing use cases of emerging p2p applications w.r.t. data sync.</li>
+        <li>Analyzing use cases of emerging p2p applications with respect to data sync.</li>
         <li>Drafting an improved data model for replicated applications, and validating it through a <a href="https://github.com/hyperhyperspace/hhs-v3-proto">small prototype</a>.</li>
       </ul>
 
       <p>The following sections detail the different design choices and technical alternatives that were explored. They are intended to help future development of Hyper Hyper Space, and to share this experience more broadly with other developers of synchronization engines and distributed end-user applications.</p>
 
-      <p>We'll provide a detailed description of the data model we're proposing, provide references to recent publications framing this problem and justify the trade-offs involved.</p>
+      <p>We'll provide a detailed description of the data model we're proposing, provide references to recent publications framing this problem, and justify the trade-offs involved.</p>
 
       <p>Finally, we propose next steps to go from the new prototype to a production-ready system.</p>
   </div>
@@ -2275,16 +2275,16 @@ button:active {
 
     <h6 id="platform">Platform</h6>
 
-    <p>The current version of Hyper Hyper Space targets primarily web browsers, using advanced but well standardized features to run a full synchronization node inside a browser tab (<a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">IndexedDb</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API">WebRTC</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Workers</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API">WebCrypto</a>). The reasoning behind this decision is that the browser is the most widely deployed secure virtual execution environment available, especially in a personal environment. Additionally, operating a web browser doesn't require overly technical skills.</p>
+    <p>The current version of Hyper Hyper Space targets primarily web browsers, using advanced but well standardized features to run a full synchronization node inside a browser tab (<a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">IndexedDB</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API">WebRTC</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Workers</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API">Web Crypto</a>). The reasoning behind this decision is that the browser is the most widely deployed secure virtual execution environment available, especially in a personal environment. Additionally, operating a web browser doesn't require overly technical skills.</p>
 
     <p>In retrospect, this has two important drawbacks:</p>
 
     <ul class="padding-bottom">
-      <li>Web browsers apply limitations to what web pages can do, sometimes inconsistently or opaquely. This resulted in browsers sometimes deleting IndexedDb databases, refusing to show the dialog that would mark a database as permanent, or not enabling advanced features like Web Crypto or WebRTC. This is somewhat understandable given the attack surface browsers present in their usual function, but attempts to adopt more p2p-friendly policies seem stalled.</li>
+      <li>Web browsers apply limitations to what web pages can do, sometimes inconsistently or opaquely. This resulted in browsers sometimes deleting IndexedDB databases, refusing to show the dialog that would mark a database as permanent, or not enabling advanced features like Web Crypto or WebRTC. This is somewhat understandable given the attack surface browsers present in their usual function, but attempts to adopt more p2p-friendly policies seem stalled.</li>
       <li>The software ecosystem available for JavaScript development changes very rapidly. Libraries will frequently be abandoned or stop receiving security updates. Furthermore, the tooling (transpilers, bundlers, etc.) necessary for creating complex software products that target the browser adds significant complexity to the project.</li>
     </ul>
 
-    <p>We believe it would be better to have an agnostic approach w.r.t. networking, storage and crypto primitives, and develop the core sync engine and its protocol independently of any platform restrictions. The browser (or <a href="https://developer.mozilla.org/en-US/docs/WebAssembly">WASM</a>, once it is sufficiently mature) is an interesting target for the reasons stated above, but not exclusively or as the main platform target.</p>
+    <p>We believe it would be better to have an agnostic approach with respect to networking, storage and crypto primitives, and develop the core sync engine and its protocol independently of any platform restrictions. The browser (or <a href="https://developer.mozilla.org/en-US/docs/WebAssembly">WASM</a>, once it is sufficiently mature) is an interesting target for the reasons stated above, but not exclusively or as the main platform target.</p>
 
     <h6 id="byzantine-fault-tolerance">Byzantine fault tolerance</h6>
 
@@ -2324,7 +2324,7 @@ button:active {
 
     <h6 id="architecture">Architecture</h6>
 
-    <p>Hyper Hyper Space's interface to the application developer is a library of replicated data types, that cover well-known CRDTs: observed-removed sets, replicable growable arrays, multi-valued and last-writer-wins registers, etc. When these types are combined to form an application's data model, the causal linking / attestation mechanism can be used to provide convergence to a consistent state. All the types implement operation-based CRDTs, and the operations are stored in a database (IndexedDb in the browser or SQLite if running standalone). The database is mainly used as a content-addressable store, saving immutable objects indexed by their hashes. The operations need to be fed to a running instance of the data types for use.</p>
+    <p>Hyper Hyper Space's interface to the application developer is a library of replicated data types, that cover well-known CRDTs: observed-removed sets, replicable growable arrays, multi-valued and last-writer-wins registers, etc. When these types are combined to form an application's data model, the causal linking / attestation mechanism can be used to provide convergence to a consistent state. All the types implement operation-based CRDTs, and the operations are stored in a database (IndexedDB in the browser or SQLite if running standalone). The database is mainly used as a content-addressable store, saving immutable objects indexed by their hashes. The operations need to be fed to a running instance of the data types for use.</p>
 
     <p>On startup, initially the system re-played all the operational histories to reach the current state. Eventually this proved too costly, and a snapshot of the latest state was saved periodically to reduce start-up time. This of course doesn't help on initial sync, and cold start-up times could still be slightly annoying. The log structure makes it very complex to prioritize the replication of the data that will be needed earliest.</p>
 
@@ -2359,7 +2359,7 @@ button:active {
       <li><p><b>Speed vs. security replication trade-offs</b>. Operational history, cryptographically signed and properly encoded as a Merkle-DAG, has very strong verification properties, even without any prior knowledge except the public part of the key pairs used for authentication. The log may be truncated, but otherwise its integrity can be fully checked, as each operation backwards-checks all its predecessors by hash-linkage. Of course, truncation would be detected with the presence of one honest peer providing the final hashes. We found no straightforward way of preserving the first property (verifiability under authentication alone) without essentially re-introducing some form of log scheme into the tree. However, if there is just one honest peer that will provide faithful root hashes for the trees used for state materialization, the properties are essentially the same. Therefore, it may be useful to replicate all or parts of the state using Merkle Search Trees. If more stringent verification is necessary, the full operational log may be synchronized and verified after obtaining the state.</p>
 
         <p>Getting a read-only replica is where the speed benefits could be greatest, since all the metadata used for CRDT convergence could be omitted. For example, in an observed-removed set, a Merkle search tree containing the current elements could be transferred, and by checking that its hash matches those attached to the last operations its integrity could be verified (but if <i>all</i> the other peers in the network collude, the entire tree could be fabricated). To be able to modify the set, it'd be necessary to replicate the sets of active and deleted tokens (tombstones) as well. </p></li>
-      <li><b>Secure partial replication</b>. Additional search trees could be added to the state to enable verifiable partial replication, much like indexes are created in traditional DBMSs to speed up access paths. For example, if paragraphs for a large document are held in a replicable growable array CRDT, they could be indexed by section, authors, etc. to enable replicating subsets of the document whose integrity can still be verified w.r.t. the final state of the operational log. In general, these secondary trees would hold redundant information that could help the application become operational much faster by being able to securely replicate state that is needed urgently first, while retaining the ability to verify the replicated data.</li>
+      <li><b>Secure partial replication</b>. Additional search trees could be added to the state to enable verifiable partial replication, much like indexes are created in traditional DBMSs to speed up access paths. For example, if paragraphs for a large document are held in a replicable growable array CRDT, they could be indexed by section, authors, etc. to enable replicating subsets of the document whose integrity can still be verified with respect to the final state of the operational log. In general, these secondary trees would hold redundant information that could help the application become operational much faster by being able to securely replicate state that is needed urgently first, while retaining the ability to verify the replicated data.</li>
 
     </ul>
 
@@ -2425,37 +2425,37 @@ button:active {
     <p>Let's sum up the conflict resolution method described above:</p>
 
     <ul class="margin-bottom">
-      <li>Use with a fixed collection of conflict-free operational objects. Synchronize state by replicating a partially ordered operational log for each.</li>
-      <li>If the state of object <b>A</b> in the replica depends on the state of object <b>B</b>, make this link explicit by adding a pointer to a position in <b>B</b>'s operational log to <b>A</b>. This effectively makes how much of <b>B</b>'s history <b>A</b> has seen <i>a part of <b>A</b>'s state!</i></li>
-      <li>When appending an operation <i>o</i> to <b>A</b>'s log that depends on some property of <b>B</b> that has been observed locally (by inspecting <b>B</b>'s state in the position of the log indicated currently being pointed at by <b>A</b>), attach this property as a precondition to <i>o</i>.</li>
-      <li>Use preconditions to express non-monotonic behavior that cannot be modeled using CRDTs alone. Incorporate rules 1-3 above to the state management logic to guarantee state convergence.</li>
+      <li>Use a fixed collection of conflict-free operational objects. Synchronize state by replicating a partially ordered operational log for each.</li>
+      <li>If the state of object <b>A</b> in the replica depends on the state of object <b>B</b>, make this link explicit by adding a pointer to a position in <b>B</b>'s operational log to <b>A</b>. This effectively makes how much of <b>B</b>'s history <b>A</b> has seen <i>part of <b>A</b>'s state</i>.</li>
+      <li>When appending an operation <i>o</i> to <b>A</b>'s log that depends on some property of <b>B</b> that has been observed locally (by inspecting <b>B</b>'s state at the position of the log currently being pointed to by <b>A</b>), attach this property as a precondition to <i>o</i>.</li>
+      <li>Use preconditions to express non-monotonic behavior that cannot be modeled using CRDTs alone. Incorporate Rules 1-3 above into the state management logic to guarantee state convergence.</li>
     </ul>
 
-    <p>We've explored ways to present this method in a more intuitive way to the application layer. There's a parallel between coordination-free distributed systems and algorithms that operate on infinite data structures, since the absence of coordination prevents the participants in the system from knowing when they have seen all the relevant data. This situation is analogous to operating on an infinite data structure. More formally, processing an operational log according to rules 1-3, and projecting only the states where the log was not on a forked state, would yield a bisimulation between any two <i>causally-compatible</i> logs.</p>
+    <p>We've explored ways to present this method in a more intuitive way to the application layer. There's a parallel between coordination-free distributed systems and algorithms that operate on infinite data structures, since the absence of coordination prevents the participants in the system from knowing when they have seen all the relevant data. This situation is analogous to operating on an infinite data structure. More formally, processing an operational log according to Rules 1-3, and projecting only the states where the log was not in a forked state, would yield a bisimulation between any two <i>causally-compatible</i> logs.</p>
 
-    <p>We propose an analogy: just as co-induction is used to reason about infinite structures, we'll define a <b>co-transaction</b> as a notion dual to traditional transactions in systems with strong consistency guarantees. Transactions in traditional databases have straightforward semantics: a transaction makes some assumptions about the state (sometimes implicitly just by reading portions of it), and the system makes assurances about these assumptions being held for the duration of the transaction, that is signaled by issuing a commit statement. If this is not possible, the transaction is aborted by the system to preserve consistency.</p>
+    <p>We propose an analogy: just as co-induction is used to reason about infinite structures, we'll define a <b>co-transaction</b> as a notion dual to traditional transactions in systems with strong consistency guarantees. Transactions in traditional databases have straightforward semantics: a transaction makes some assumptions about the state (sometimes implicitly just by reading portions of it), and the system makes assurances about these assumptions being held for the duration of the transaction, which is signaled by issuing a commit statement. If this is not possible, the transaction is aborted by the system to preserve consistency.</p>
 
-    <p>This schema is of course impossible in a coordination-free system, there is no way to somehow <i>lock</i> the state being read to prevent concurrent edits. If, on the other hand, reads to state could be detected automatically, like in the traditional database example, preconditions asserting the observed state could be <b>generated by the system</b>, thus making the ensuing modifications conditional to these parts of the state not being modified concurrently. The next step is obvious: use operational replication (with rules 1-3), and reason co-inductively to assert consistency properties of the sequence of generated states. Transactions would be aborted transitively whenever they interfere with each other. How this works in practice needs to be investigated.</p>
+    <p>This schema is of course impossible in a coordination-free system; there is no way to somehow <i>lock</i> the state being read to prevent concurrent edits. If, on the other hand, reads to state could be detected automatically, as in the traditional database example, preconditions asserting the observed state could be <b>generated by the system</b>, thus making the ensuing modifications conditional on these parts of the state not being modified concurrently. The next step is obvious: use operational replication (with Rules 1-3), and reason co-inductively to assert consistency properties of the sequence of generated states. Transactions would be aborted transitively whenever they interfere with each other. How this works in practice needs to be investigated.</p>
 
     <h4 id="conclusions">Conclusions and recommendations</h4>
 
     <ul>
-      <li><b>Operational logs + conflict resolution are a powerful idea</b>. Despite the original concepts being very old (dating at least as far back to the notion of <i>messages</i> and <i>antimessages</i> in Jefferson's 1985 paper <a href="https://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf">Virtual Time</a>), there are practically no such coordination-free systems in widespread use today. The ideas developed around our new prototype, recent literature and other similar systems need to be engineered into well tested and well understood systems. In particular, we're very enthusiastic about Hyper Hyper Space proposed new data model.
+      <li><b>Operational logs + conflict resolution are a powerful idea</b>. Despite the original concepts being very old (dating at least as far back as the notion of <i>messages</i> and <i>antimessages</i> in Jefferson's 1985 paper <a href="https://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf">Virtual Time</a>), there are practically no such coordination-free systems in widespread use today. The ideas developed around our new prototype, recent literature, and other similar systems need to be engineered into well-tested and well-understood systems. In particular, we're very enthusiastic about Hyper Hyper Space's proposed new data model.</li>
 
-      <li><b>Focus on sync</b>. Our recommendation is to decouple the sync component of the system as much as possible, relegating other concerns to plug-ins or modules (browser-based sync, synchronization of live program state, etc.). The goal would be to have a small and portable software component to do coordination-free sync with advanced conflict resolution. This would broaden the potential audience of this library, and facilitate collaboration or merging with other synchronization efforts. The sync protocol should be specified and interoperability at the sync level, encouraged.</li>
+      <li><b>Focus on sync</b>. Our recommendation is to decouple the sync component of the system as much as possible, relegating other concerns to plug-ins or modules (browser-based sync, synchronization of live program state, etc.). The goal would be to have a small and portable software component to do coordination-free sync with advanced conflict resolution. This would broaden the potential audience of this library and facilitate collaboration or merging with other synchronization efforts. The sync protocol should be specified and interoperability at the sync level encouraged.</li>
 
-      <li><b>Performance is a big challenge</b>. Since conflict resolution appears to require state materialization at arbitrary points in operational history, considerable work on performant algorithms will likely be necessary. In the context of the prototype, Merkle Search Trees were used for this purpose, but other immutable data structures, checkpointing, etc. could be explored (since they would be used locally). </li>
+      <li><b>Performance is a big challenge</b>. Since conflict resolution appears to require state materialization at arbitrary points in operational history, considerable work on performant algorithms will likely be necessary. In the context of the prototype, Merkle Search Trees were used for this purpose, but other immutable data structures, checkpointing, etc. could be explored (since they would be used locally).</li>
 
       <li><b>Explore a layered approach to Byzantine fault tolerance</b>. Having settled on operational logs as the main data structure, consider approaching Byzantine fault tolerance as the problem of replicating logs, independently of their purpose. Merkle DAGs offer a very robust solution, and this hardened approach could be implemented as just another transport layer for the sync engine component described above. Explore using Merkle Search Trees as a secondary structure for faster startup, partial sync, etc.</li>
     </ul>
 
     <h4 id="feedback">Feedback</h4>
 
-    <p>This report has been archived in <a href="https://github.com/hyperhyperspace/blackpaper">this github repo</a>. Discussion in the issues is welcome.</p>
+    <p>This report has been archived in <a href="https://github.com/hyperhyperspace/blackpaper">this GitHub repo</a>. Discussion in the issues is welcome.</p>
 
-    <p>You're welcome to join Hyper Hyper Space's <a href="https://discord.gg/9epr3XrRnW">Discord instance</a>.</p>
+    <p>You're welcome to join Hyper Hyper Space's <a href="https://discord.gg/9epr3XrRnW">Discord server</a>.</p>
 
-    <p>The author may be reached at <a href="mailto:santi@hyperhyperspace.org">santi@hyperhyperspace.org</a></p>
+    <p>The author may be reached at <a href="mailto:santi@hyperhyperspace.org">santi@hyperhyperspace.org</a>.</p>
 
     <h4 id="references">References</h4>
 
@@ -2463,7 +2463,7 @@ button:active {
 
     <ul>
       <li>
-        <b>White Paper</b>, by S.Bazerque<br>
+        <b>White Paper</b>, by S. Bazerque<br>
         <a href="https://www.hyperhyperspace.org/whitepaper/">https://www.hyperhyperspace.org/whitepaper/</a>
       </li>
       <li>
@@ -2475,7 +2475,7 @@ button:active {
         <a href="https://github.com/hyperhyperspace/hyperhyperspace-core">https://github.com/hyperhyperspace/hyperhyperspace-core</a>
       </li>
       <li>
-        <b>2022 Year in Review</b>, by S.Bazerque<br>
+        <b>2022 Year in Review</b>, by S. Bazerque<br>
         <a href="https://www.hyperhyperspace.org/2022-year-in-review.html">https://www.hyperhyperspace.org/2022-year-in-review.html</a>
       </li>
     </ul>
@@ -2484,15 +2484,15 @@ button:active {
 
     <ul>
       <li>
-        <b>Making CRDTs Byzantine Fault Tolerant</b>, by M.Kleppmann<br>
-        <a href="https://martin.kleppmann.com/papers/bft-crdt-papoc22.pdf">https://martin.kleppmann.com/papers/bft-crdt-papoc22.pdf</a></p>
+        <b>Making CRDTs Byzantine Fault Tolerant</b>, by M. Kleppmann<br>
+        <a href="https://martin.kleppmann.com/papers/bft-crdt-papoc22.pdf">https://martin.kleppmann.com/papers/bft-crdt-papoc22.pdf</a>
       </li>
       <li>
-        <b>Logical Clocks and Monotonicity for Byzantine-Tolerant Replicated Data Types</b>, by F.Jacob & H.Hartenstein<br>
+        <b>Logical Clocks and Monotonicity for Byzantine-Tolerant Replicated Data Types</b>, by F. Jacob & H. Hartenstein<br>
         <a href="https://dl.acm.org/doi/pdf/10.1145/3642976.3653034">https://dl.acm.org/doi/pdf/10.1145/3642976.3653034</a>
       </li>
       <li>
-        <b>Merkle Search Trees: Efficient State-Based CRDTs in Open Networks</b>, by A.Auvolat & F.Taïani<br>
+        <b>Merkle Search Trees: Efficient State-Based CRDTs in Open Networks</b>, by A. Auvolat & F. Taïani<br>
         <a href="https://inria.hal.science/hal-02303490/document">https://inria.hal.science/hal-02303490/document</a>
       </li>
     </ul>
@@ -2501,23 +2501,23 @@ button:active {
 
     <ul>
       <li>
-        <b>Keeping CALM: When Distributed Consistency is Easy</b>, by J.M.Hellerstein & P.Alvaro<br>
+        <b>Keeping CALM: When Distributed Consistency is Easy</b>, by J. M. Hellerstein & P. Alvaro<br>
         <a href="https://arxiv.org/pdf/1901.01930">https://arxiv.org/pdf/1901.01930</a>
       </li>
       <li>
-        <b>A highly-available move operation for replicated trees</b>, by M.Kleppmann, D.P.Mulligan, V.B.F.Gomes, & A.R.Beresford<br>
+        <b>A highly-available move operation for replicated trees</b>, by M. Kleppmann, D. P. Mulligan, V. B. F. Gomes, & A. R. Beresford<br>
         <a href="https://martin.kleppmann.com/papers/move-op.pdf">https://martin.kleppmann.com/papers/move-op.pdf</a>
       </li>
       <li>
-        <b>Virtual Time</b>, by D.R.Jefferson<br>
+        <b>Virtual Time</b>, by D. R. Jefferson<br>
         <a href="https://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf">https://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf</a>
       </li>
       <li>
-        <b>Weaker Forms of Monotonicity for Declarative Networking: A More Fine-Grained Answer to the CALM-Conjecture</b>, by T.J.Ameloot, B.Ketsman, F.Neven & D.Zinn<br>
+        <b>Weaker Forms of Monotonicity for Declarative Networking: A More Fine-Grained Answer to the CALM-Conjecture</b>, by T. J. Ameloot, B. Ketsman, F. Neven & D. Zinn<br>
         <a href="https://dl.acm.org/doi/10.1145/2809784">https://dl.acm.org/doi/10.1145/2809784</a>
       </li>
       <li>
-        <b>Relational transducers for declarative networking</b>, by T.J.Ameloot, F.Neven & J.Van den Bussche<br>
+        <b>Relational transducers for declarative networking</b>, by T. J. Ameloot, F. Neven & J. Van den Bussche<br>
         <a href="https://arxiv.org/abs/1012.2858">https://arxiv.org/abs/1012.2858</a>
       </li>
     </ul>
