@@ -2214,7 +2214,7 @@ button:active {
 		<h2 class="text-margin-bottom sans-serif">Hyper Hyper Space: Conclusions and ideas for building p2p secure data sync</h2>
     <span class=""></span>
   </div>
-		<div class="two-column golden tablet"><span class="monospace small  padding-left"> by <a href="mailto:santi@hyperhyperspace.org"><b>Santiago Bazerque</b></a>, Hyper Hyper Space Project</span><span class="text-right padding-right monospace small"><b>draft</b>, August 26th <b>2024</b></span></div>
+		<div class="two-column golden tablet"><span class="monospace small  padding-left"> by <a href="mailto:santi@hyperhyperspace.org"><b>Santiago Bazerque</b></a>, Hyper Hyper Space Project</span><span class="text-right padding-right monospace small"><b>v1.0</b>, August 28th <b>2024</b></span></div>
 	</div>
 
 	<div class="inner-page-width padding desktop gap-gutter gutter-top">
@@ -2264,6 +2264,8 @@ button:active {
       <a class="underline" href="#conclusions">Conclusions and recommendations</a>
       <ul></ul>
       <a class="feedback" href="#feedback">Feedback</a>
+      <ul></ul>
+      <a class="funding" href="#funding">Funding</a>
       <ul></ul>
       <a class="references" href="#references">References</a>
     </div>
@@ -2339,7 +2341,7 @@ button:active {
 
     <h6 id="introduction">Introduction</h6>
 
-    <p>To address some of the shortcomings described above, we've implemented a <a href="">small prototype</a> exploring ideas for a new data model.</p>
+    <p>To address some of the shortcomings described above, we've implemented a <a href="https://github.com/hyperhyperspace/hhs-v3-proto">small prototype</a> exploring ideas for a new data model.</p>
 
     <p>First, we analyzed ways to provide Merkle proofs of state properties using Merkle Search Trees. See <a href="https://inria.hal.science/hal-02303490/document">this paper</a> for definitions and applications to state-based CRDTs. This would allow us to add secure <i>partial</i> replication to the sync protocol.</p>
 
@@ -2408,15 +2410,17 @@ button:active {
       <li><b>Rule 2</b>: <i>No stale reads.</i> When object <b>C</b> moves a state pointer forward and encounters a merge operation <i>m</i>, its state is restored to the point right before any divergent operations being merged by <i>m</i> were referenced, and the operational log is reapplied from there, re-evaluating all preconditions.</li>
     </ul>
 
-    <p>Note that <b>Rule 2</b> generates more internal states that should <i>not</i> be observed by other objects, as they're not stable across replicas. To address this, we ensure the conflict resolution process is transitive. As with merge operations, <b>when an operation moves a state pointer forward resulting in log reapplication (with potentially different outcomes), we tag the pointer forwarding operation with a reference to the last stable state in the log (unaffected by the state pointer advance)</b>. This enables our final rule:</p>
+    <p>Note that <b>Rule 2</b> generates more internal states that should <i>not</i> be observed by other objects, as they're not stable across replicas. To address this, we ensure the conflict resolution process is transitive. As with merge operations, <b>when an operation moves a state pointer forward resulting in log reapplication (with potentially different outcomes), we tag the pointer forwarding operation with a reference to the last stable state in the log (unaffected by the state pointer advance)</b>. This enables the formulation of our final rule:</p>
 
     <ul class="margin-bottom">
       <li><b>Rule 3</b>: <i>Transitivity</i>. When object <b>C</b> moves its state pointer for object <b>D</b> forward and encounters another state pointer update operation <i>u</i> (updating one of <b>D</b>'s foreign state pointers), its state is restored to the point right before any states affected by <i>u</i> were referenced, and the operational log is reapplied from there, re-evaluating all preconditions.</li>
     </ul>
 
-    <p>Since we require that state dependencies within the replica are acyclic, we're confident that <b>Rule 3</b> can be applied in finite steps. The combined application of rules 1-3 as state synchronizes guarantees eventual state convergence in every replica.</p>
+    <p>Since we require that state dependencies within the replica are acyclic, we're confident that <b>Rule 3</b> can be applied in a finite number of steps. The combined application of rules 1-3 as state synchronizes guarantees eventual state convergence in every replica.</p>
 
-    <p>Let's revisit some examples of how state dependencies and preconditions can model <i>(relaxed versions of)</i> non-monotonic problems. The capability system described earlier can use an observed-removed Set to hold &lt;user, capability&gt; pairs, with other structures whose access is controlled by specific capabilities using preconditions asserting the appropriate pair's presence in the set.</p>
+    <p>We'll now see a few examples of how state dependencies and preconditions can be used to model <i>(relaxed versions of)</i> non-monotonic problems.</p>
+    
+    <p>The capability system described before can be represented using an observed-removed Set to hold &lt;user, capability&gt; pairs, and other structures whose access is controlled by holding specific capabilities would just use preconditions asserting that the appropiate pair is in the set.</p>
 
     <p>The permissions system in Hyper Hyper Space's wiki would be straightforward. It uses a fixed set of owners, a set of moderators changeable only by owners (so far monotonic), and a users set. User admissions/removals and moderation activities must be implemented by operations preconditioned on authorship by identities in the moderators set. Wiki edits are preconditioned on authorship by identities in the user set. This exemplifies the need for the transitivity rule: a moderator can admit a user, the user can edit, and the moderator can be concurrently removed from the moderator set. This resolves by removing the user from the users set and transitively removing their edits from the wiki.</p>
 
@@ -2428,27 +2432,31 @@ button:active {
 
     <ul class="margin-bottom">
       <li>Use a fixed collection of conflict-free operational objects. Synchronize state by replicating a partially ordered operational log for each.</li>
-      <li>If object <b>A</b>'s state in the replica depends on object <b>B</b>'s state, make this link explicit by adding a pointer to a position in <b>B</b>'s operational log to <b>A</b>. This effectively makes how much of <b>B</b>'s history <b>A</b> has seen <i>part of <b>A</b>'s state</i>.</li>
-      <li>When appending an operation <i>o</i> to <b>A</b>'s log that depends on a property of <b>B</b> observed locally (by inspecting <b>B</b>'s state at the log position currently pointed to by <b>A</b>), attach this property as a precondition to <i>o</i>.</li>
-      <li>Use preconditions to express non-monotonic behavior that can't be modeled using CRDTs alone. Incorporate Rules 1-3 above into state management logic to guarantee state convergence.</li>
+      <li>If the state of object <b>A</b> in the replica depends on the state of object <b>B</b>, make this link explicit by adding a pointer to a position in <b>B</b>'s operational log to <b>A</b>. This effectively makes how much of <b>B</b>'s history <b>A</b> has seen <i>part of <b>A</b>'s state</i>.</li>
+      <li>When appending an operation <i>o</i> to <b>A</b>'s log that depends on some property of <b>B</b> that has been observed locally (by inspecting <b>B</b>'s state at the position in the log currently being pointed at to by <b>A</b>), attach this property as a precondition to <i>o</i>.</li>
+      <li>Use preconditions to express non-monotonic behavior that cannot be modeled using CRDTs alone. Incorporate Rules 1-3 above into state management logic to guarantee state convergence.</li>
     </ul>
 
-    <p>We've explored ways to present this method more intuitively to the application layer. There's a parallel between coordination-free distributed systems and algorithms operating on infinite data structures, as the absence of coordination prevents system participants from knowing when they've seen all relevant data. This situation is analogous to operating on an infinite data structure. More formally, processing an operational log according to Rules 1-3, and projecting only states where the log wasn't forked, would yield a bisimulation between any two <i>causally-compatible</i> logs.</p>
+    <p>We've explored ways to present this method in a more intuitive way to the application layer. There's a parallel between coordination-free distributed systems and algorithms that operate on infinite data structures, as the absence of coordination prevents the participants in the system from knowing when they have seen all relevant data. This situation is analogous to operating on an infinite data structure. More formally, processing an operational log according to Rules 1-3, and projecting only the states where the log was not on a forked state, would yield a bisimulation between any two <i>causally-compatible</i> operation streams.</p>
 
     <p>We propose an analogy: just as co-induction reasons about infinite structures, we'll define <b>co-transaction</b> as a notion dual to traditional transactions in systems with strong consistency guarantees. Traditional database transactions have straightforward semantics: a transaction makes assumptions about the state (sometimes implicitly by reading portions of it), and the system assures these assumptions hold for the transaction's duration, signaled by a commit statement. If impossible, the system aborts the transaction to preserve consistency.</p>
 
-    <p>This schema is impossible in a coordination-free system; there's no way to <i>lock</i> the read state to prevent concurrent edits. However, if state reads could be automatically detected, as in traditional databases, preconditions asserting the observed state could be <b>system-generated</b>, making ensuing modifications conditional on these state parts remaining unmodified concurrently. The next step is clear: use operational replication (with Rules 1-3), and reason co-inductively to assert consistency properties of the generated state sequence. Transactions would be transitively aborted when interfering with each other. The practical implications of this approach require further investigation.</p>
+    <p>This schema is impossible in a coordination-free system; there's no way to <i>lock</i> the read state to prevent concurrent edits. However, if state reads could be automatically detected, as in traditional databases, preconditions asserting the observed state could be <b>system-generated</b>, making ensuing modifications conditional on these state parts remaining unmodified concurrently. The next step is clear: use operational replication (with rules 1-3), and reason co-inductively to assert consistency properties of the sequence of generated states. Transactions would be transitively aborted when interfering with each other. How this works in practice needs to be investigated.</p>
 
     <h4 id="conclusions">Conclusions and recommendations</h4>
 
     <ul>
-      <li><b>Operational logs + conflict resolution are powerful</b>. Despite the concepts' age (dating at least to Jefferson's 1985 paper <a href="https://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf">Virtual Time</a>), few such coordination-free systems are widely used today. Ideas from our new prototype, recent literature, and similar systems need engineering into well-tested, well-understood systems. We're particularly enthusiastic about Hyper Hyper Space's proposed new data model.</li>
+      <li><b>Operational logs + conflict resolution are powerful</b>. Despite the concepts' age (dating at least to Jefferson's 1985 paper <a href="https://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf">Virtual Time</a>), few such coordination-free systems are widely used today. Ideas from our new prototype, recent literature, and similar systems need to be engineered into well-tested, well-understood systems. We're particularly enthusiastic about Hyper Hyper Space's proposed new data model.</li>
 
-      <li><b>Focus on sync</b>. We recommend decoupling the system's sync component as much as possible, relegating other concerns to plug-ins or modules (e.g., browser-based sync, live program state synchronization). The goal: a small, portable software component for coordination-free sync with advanced conflict resolution. This would broaden the library's potential audience and facilitate collaboration or merging with other synchronization efforts. The sync protocol should be specified and interoperability at the sync level encouraged.</li>
+      <li><b>Focus on sync</b>. Our recommendation is to decouple the sync component of the system as much as possible, relegating other concerns to plug-ins or modules (browser-based sync, synchronization of live program state, etc.). The goal would be to have a small and portable software component to do coordination-free sync with advanced conflict resolution. This would broaden the potential audience of this library, and facilitate collaboration or merging with other synchronization efforts. The sync protocol should be specified and interoperability at the sync level, encouraged.</li>
+      
+      <li><b>Support standard storage solutions</b>. Application developers have a wide range of requirements considering storage systems. Sync, on the other hand, comes with its own set of particular requirements (oplogs and time travelling for conflict resolution, fast state digests for gossip). Decouple the storage system used by the application from the sync system, by providing adapters for the most popular databases and stores. These adapters would perform fast bi-directional sync between the local replica, held by the sync system, and the stores used by the app in normal operation. Specially intersting would be integrating a relational database system, where foreign keys would roughly map to co-transactions verifying referential integrity. Co-transaction invalidation would have to be propagated back into the relational database.</li>
+    
+      <li><b>Performance is a significant challenge</b>. Since conflict resolution appears to require state materialization at arbitrary points in operational history, considerable work on performant algorithms will likely be necessary. In the context of the prototype, Merkle Search Trees where used for this purpose, but other immutable data sructures, checkpointing, etc. could be explored (since they would only be used locally).</li>
 
-      <li><b>Performance is a significant challenge</b>. Since conflict resolution appears to require state materialization at arbitrary points in operational history, considerable work on performant algorithms will likely be necessary. In our prototype, we used Merkle Search Trees for this purpose, but other immutable data structures, checkpointing, etc. could be explored for local use.</li>
-
-      <li><b>Explore a layered approach to Byzantine fault tolerance</b>. Having settled on operational logs as the main data structure, consider approaching Byzantine fault tolerance as the problem of replicating logs, independently of their purpose. Merkle DAGs offer a robust solution, and this hardened approach could be implemented as another transport layer for the sync engine component described above. We should explore using Merkle Search Trees as a secondary structure for faster startup, partial sync, and other optimizations.</li>
+      <li><b>Explore a layered approach to Byzantine fault tolerance</b>. Having settled on operational logs as the main data structure, consider approaching Byzantine fault tolerance as the problem of replicating logs, independently of their purpose. Merkle DAGs offer a robust solution, and this hardened approach could be implemented as another transport layer for the sync engine component described above. Explore using Merkle Search Trees as a secondary structure for faster startup, partial sync, and other optimizations.</li>
+    
+      <li><b>Explore automatic generation of preconditions for conflict resolution</b>. As we mentioned before, the conflict resolution layer would be easier to use by application developers if the parts of the state that need to be guarded by the proposed co-transaction mechanism could be detected automatically. This idea contradicts our desire to decouple application storage and sync storage, since observations of the state would then happen in a different storage system. This needs further analysis.</li>
     </ul>
 
     <h4 id="feedback">Feedback</h4>
@@ -2458,6 +2466,9 @@ button:active {
     <p>You're invited to join Hyper Hyper Space's <a href="https://discord.gg/9epr3XrRnW">Discord server</a> for further discussion.</p>
 
     <p>The author can be reached at <a href="mailto:santi@hyperhyperspace.org">santi@hyperhyperspace.org</a>.</p>
+    
+    <h4 id="funding">Funding</h4>
+    <p>This project is funded through <a href="https://nlnet.nl/assure">NGI Assure</a>, a fund established by <a href="https://nlnet.nl">NLnet</a> with financial support from the European Commission's <a href="https://ngi.eu">Next Generation Internet</a> program. Learn more at the <a href="https://nlnet.nl/project/HyperHyperSpace">NLnet project page</a>. </p>
 
     <h4 id="references">References</h4>
 
