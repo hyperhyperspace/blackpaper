@@ -2214,7 +2214,7 @@ button:active {
 		<h2 class="text-margin-bottom sans-serif">Hyper Hyper Space: Conclusions and ideas for building p2p secure data sync</h2>
     <span class=""></span>
   </div>
-		<div class="two-column golden tablet"><span class="monospace small  padding-left"> by <a href="mailto:santi@hyperhyperspace.org"><b>Santiago Bazerque</b></a>, Hyper Hyper Space Project</span><span class="text-right padding-right monospace small"><b>v1.0</b>, August 28th <b>2024</b></span></div>
+		<div class="two-column golden tablet"><span class="monospace small  padding-left"> by <a href="mailto:santi@hyperhyperspace.org"><b>Santiago Bazerque</b></a>, Hyper Hyper Space Project</span><span class="text-right padding-right monospace small"><b>v1.1</b>, September 24th <b>2024</b></span></div>
 	</div>
 
 	<div class="inner-page-width padding desktop gap-gutter gutter-top">
@@ -2263,11 +2263,13 @@ button:active {
 
       <a class="underline" href="#conclusions">Conclusions and recommendations</a>
       <ul></ul>
-      <a class="feedback" href="#feedback">Feedback</a>
+      <a class="underline" href="#feedback">Feedback</a>
       <ul></ul>
-      <a class="funding" href="#funding">Funding</a>
+      <a class="underline" href="#funding">Funding</a>
       <ul></ul>
-      <a class="references" href="#references">References</a>
+      <a class="underline" href="#acknowledgements">Acknowledgements</a>
+      <ul></ul>
+      <a class="underline" href="#references">References</a>
     </div>
 
     <div>
@@ -2277,7 +2279,7 @@ button:active {
 
     <h6 id="platform">Platform</h6>
 
-    <p>The current version of Hyper Hyper Space primarily targets web browsers, using advanced but well-standardized features to run a full synchronization node inside a browser tab. These features include IndexedDB, WebRTC, Web Workers, and Web Crypto. We chose this approach because the browser is the most widely deployed secure virtual execution environment available, especially in personal computing environments. Additionally, operating a web browser doesn't require overly technical skills.</p>
+    <p>The current version of Hyper Hyper Space primarily targets web browsers, using advanced but well-standardized features to run a full synchronization node inside a browser tab. These features include IndexedDB, WebRTC, Web Workers and Web Crypto. We chose this approach because the browser is the most widely deployed secure virtual execution environment available, especially in personal computing environments. Additionally, operating a web browser doesn't require overly technical skills.</p>
 
     <p>In retrospect, this decision has two important drawbacks:</p>
 
@@ -2300,7 +2302,7 @@ button:active {
 
     <h6 id="local-first">Coordination-free / Local first operation</h6>
 
-    <p>Autonomous operation, meaning the ability to run an application with intermittent network access or even offline, is one of our core objectives. However, in the absence of coordination, almost any non-trivial application will encounter conflicts. A detailed example using a capability system is presented in the <a href="https://www.hyperhyperspace.org/whitepaper/">Hyper Hyper Space White Paper</a>. This reality pushes us beyond using only Conflict-free Replicated Data Types (CRDTs) as our modeling building blocks, necessitating some form of conflict resolution layer.</p>
+    <p>Autonomous operation, meaning the ability to run an application with intermittent network access or even offline, is one of our core objectives. However, in the absence of coordination, almost any non-trivial application will encounter conflicts. A detailed example using a capability system is presented in the <a href="https://www.hyperhyperspace.org/whitepaper/">Hyper Hyper Space White Paper</a>. This reality pushes us beyond using Conflict-free Replicated Data Types (CRDTs) exclusively as our modeling building blocks, necessitating some form of conflict resolution layer.</p>
 
     <p>We explored two alternatives:</p>
 
@@ -2331,7 +2333,7 @@ button:active {
 
     <p>Applications are expected to compose and extend these types, embedding application rules and logic in a way that makes them available to the replication mechanism. Some application developers expressed that this architectural decision is too invasive and would prefer a clear separation of application behavior and storage.</p>
 
-    <p>The transformation of in-memory data structures implementing the replicated data types into Merkle-ized (hash-linked) structures is transparent and automatic. While this offers excellent ergonomics, it makes synchronization unnecessarily complex. We believe it would be wiser to implement this memory-to-hash-linked translation as a separate, optional layer. This aligns with the idea of using data sync as a <i>narrow waist</i>, following the TCP/IP example. See the <a href="https://www.hyperhyperspace.org/whitepaper">White Paper</a> for details.</p>
+    <p>The transformation of in-memory data structures implementing the replicated data types into Merkle-ized (hash-linked) structures is transparent and automatic. While this offers excellent development ergonomics, it makes synchronization unnecessarily complex. We believe it would be wiser to implement this memory-to-hash-linked translation as a separate, optional layer. This aligns with the idea of using data sync as a <i>narrow waist</i>, following the TCP/IP example. See the <a href="https://www.hyperhyperspace.org/whitepaper">White Paper</a> for details.</p>
 
     <h6 id="data-structures">Data structures</h6>
 
@@ -2420,7 +2422,7 @@ button:active {
 
     <p>We'll now see a few examples of how state dependencies and preconditions can be used to model <i>(relaxed versions of)</i> non-monotonic problems.</p>
     
-    <p>The capability system described before can be represented using an observed-removed Set to hold &lt;user, capability&gt; pairs, and other structures whose access is controlled by holding specific capabilities would just use preconditions asserting that the appropiate pair is in the set.</p>
+    <p>The capability system described before can be represented using an observed-removed Set to hold &lt;user, capability&gt; pairs, and other structures whose access is controlled by holding specific capabilities would just use preconditions asserting that the appropriate pair is in the set.</p>
 
     <p>The permissions system in Hyper Hyper Space's wiki would be straightforward. It uses a fixed set of owners, a set of moderators changeable only by owners (so far monotonic), and a users set. User admissions/removals and moderation activities must be implemented by operations preconditioned on authorship by identities in the moderators set. Wiki edits are preconditioned on authorship by identities in the user set. This exemplifies the need for the transitivity rule: a moderator can admit a user, the user can edit, and the moderator can be concurrently removed from the moderator set. This resolves by removing the user from the users set and transitively removing their edits from the wiki.</p>
 
@@ -2439,7 +2441,7 @@ button:active {
 
     <p>We've explored ways to present this method in a more intuitive way to the application layer. There's a parallel between coordination-free distributed systems and algorithms that operate on infinite data structures, as the absence of coordination prevents the participants in the system from knowing when they have seen all relevant data. This situation is analogous to operating on an infinite data structure. More formally, processing an operational log according to Rules 1-3, and projecting only the states where the log was not on a forked state, would yield a bisimulation between any two <i>causally-compatible</i> operation streams.</p>
 
-    <p>We propose an analogy: just as co-induction reasons about infinite structures, we'll define <b>co-transaction</b> as a notion dual to traditional transactions in systems with strong consistency guarantees. Traditional database transactions have straightforward semantics: a transaction makes assumptions about the state (sometimes implicitly by reading portions of it), and the system assures these assumptions hold for the transaction's duration, signaled by a commit statement. If impossible, the system aborts the transaction to preserve consistency.</p>
+    <p>We propose an analogy: just as co-induction reasons about infinite structures, we'll define <b>co-transactions</b> as a notion dual to traditional transactions in systems with strong consistency guarantees. Traditional database transactions have straightforward semantics: a transaction makes assumptions about the state (sometimes implicitly by reading portions of it), and the system assures these assumptions hold for the transaction's duration, signaled by a commit statement. If this is not feasible, the system aborts the transaction to preserve consistency.</p>
 
     <p>This schema is impossible in a coordination-free system; there's no way to <i>lock</i> the read state to prevent concurrent edits. However, if state reads could be automatically detected, as in traditional databases, preconditions asserting the observed state could be <b>system-generated</b>, making ensuing modifications conditional on these state parts remaining unmodified concurrently. The next step is clear: use operational replication (with rules 1-3), and reason co-inductively to assert consistency properties of the sequence of generated states. Transactions would be transitively aborted when interfering with each other. How this works in practice needs to be investigated.</p>
 
@@ -2470,6 +2472,9 @@ button:active {
     <h4 id="funding">Funding</h4>
     <p>This project is funded through <a href="https://nlnet.nl/assure">NGI Assure</a>, a fund established by <a href="https://nlnet.nl">NLnet</a> with financial support from the European Commission's <a href="https://ngi.eu">Next Generation Internet</a> program. Learn more at the <a href="https://nlnet.nl/project/HyperHyperSpace">NLnet project page</a>. </p>
 
+    <h4 id="acknowledgements">Acknowledgements</h4>
+    <p>This article incorporates corrections and improvements by Micah Fitch and José I. Orlicki, and it builds upon valuable feedback provided by Michiel Leenaars and the strategy team at NLnet. The idea of using Merkle Search Trees to materialize CRDT state was suggested by Martin Kleppmann.</p>
+    
     <h4 id="references">References</h4>
 
     <h6>Hyper Hyper Space</h6>
